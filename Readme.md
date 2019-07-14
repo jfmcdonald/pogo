@@ -12,7 +12,7 @@ any cluster connected storage.
 Warnings!
 =========
 
-Don't run pogo against production file systems!
+Don't run pogo against production file systems!  
 No Really, Don't!
 Pogo the IO Clown generates rather small files and  
 expands them slowly if at all. That said, Pogo is able  
@@ -39,7 +39,9 @@ have to index the working directory. This is to reduce
 the advantage of storage systems with extremely fast  
 meta-data services. Each key pair is set with a TTL  
 (default is 1 hour) so anything that is not deleted  
-gets auto cleaned up.  
+gets auto cleaned up. You will still need to manually  
+clean up any temp files not deleted. This is also the  
+case if you kill your job before it finishes.
 
 Usage?
 ------
@@ -50,8 +52,7 @@ Usage of ./pogo:
   -k/v ttl int    
         Index Key/Value store default key TTL (default 60)  
   -count int  
-        Total number of files to generate (default 100)  
-
+        Total number of files to generate (default 10)  
 
 Credit
 -------
