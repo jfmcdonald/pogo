@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"os"
 	"time"
+	"log"
 
 	"github.com/go-redis/redis"
 )
@@ -45,7 +46,7 @@ func RandString(n int) string {
 // Description: creates a new blank file and logs it into the redis db
 // Expects: a pointers to the root path, key ttl and open redis client
 // Returns: nothing
-// TODO: currnetly panics on creation or connection error. this should be imporved
+// TODO:
 func createFile(pathPtr *string, ttlPtr *int, client *redis.Client) {
 	// generate a random file name
 	fileName := RandString(10)
@@ -54,36 +55,36 @@ func createFile(pathPtr *string, ttlPtr *int, client *redis.Client) {
 	// Create the file on disk
 	emptyFile, err := os.Create(filePath)
 	if err != nil {
-		panic(err)
+		log.Println("error creating empty file at: " + filePath + " " + err)
 	}
 	emptyFile.Close()
 	// add the place holder to the redis db
 	setErr := client.Set(fileName, filePath, time.Duration(*ttlPtr)*time.Second).Err()
 	if setErr != nil {
-		panic(setErr)
+		log.Println("error setting db key for file: " + fileName + " " + setErr)
 	}
 }
 
 // Description: updates an random existing file with 8 bits of data
 // Expects: pointer to an open redis client
 // Returns: nothing
-// TODO: replace panics with proper logging
+// TODO:
 func updateFile(client *redis.Client) {
 	// get a random key from redis
 	key, randErr := client.RandomKey().Result()
 	if randErr != nil {
-		panic(randErr)
+		log.Println("unable to get random key: " + randErr)
 	}
 	// get the keys value
 	val, getErr := client.Get(key).Result()
 	if getErr != nil {
-		panic(getErr)
+		log.Println("unable to get value from key: " + key + " " + getErr)
 	}
 	// open our file for writing, no read we don't want to create an
 	// excuse for the filesystem to cache data
 	file, ioErr := os.OpenFile(val, os.O_WRONLY|os.O_APPEND, 0644)
 	if ioErr != nil {
-		panic(ioErr)
+		log.Println("unable to open file for writing: " + val + " " + ioErr)
 	}
 	// defer the close till the end of the funciton
 	defer file.Close()
@@ -91,7 +92,7 @@ func updateFile(client *redis.Client) {
 	// we don't use it
 	_, writeErr := file.WriteString(RandString(8))
 	if writeErr != nil {
-		panic(writeErr)
+		log.Println("unable to write out to file: " + file + " " + writeErr)
 	}
 }
 
@@ -99,22 +100,22 @@ func updateFile(client *redis.Client) {
 // sure the file is actually read from disk in its entirety
 // Expects: pointer to open redis db connection
 // Returns: nothing
-// TODO: proper error reporting
+// TODO:
 func readFile(client *redis.Client) {
 	// get a random file key from the db
 	key, randErr := client.RandomKey().Result()
 	if randErr != nil {
-		panic(randErr)
+		log.Println("unable to get randome key: " + randErr)
 	}
 	// get the keys value
 	val, getErr := client.Get(key).Result()
 	if getErr != nil {
-		panic(getErr)
+		log.Println("unable to get value from key: " + getErr)
 	}
 	// Read in our file
 	data, readErr := ioutil.ReadFile(val)
 	if readErr != nil {
-		panic(readErr)
+		log.Println("unalbe to read from file: "  + val + " " + readErr)
 	}
 	// do something with the data so it's really in mem
 	data = data
@@ -123,22 +124,22 @@ func readFile(client *redis.Client) {
 // Description: Delete a random file and remove it's db entery
 // Expects: pointer to open redis client
 // Returns: nothing
-// TODO: proper error logging, redis key delete error check is broken
+// TODO: redis key delete error check is broken
 func delFile(client *redis.Client) {
 	// get a random file key from the db
 	key, randErr := client.RandomKey().Result()
 	if randErr != nil {
-		panic(randErr)
+		log.Println("unable to get randome key" + randErr)
 	}
 	// get the keys value
 	val, getErr := client.Get(key).Result()
 	if getErr != nil {
-		panic(getErr)
+		log.Println("unalbe to get key value: " + getErr)
 	}
 	// actually remove the file.
 	remErr := os.Remove(val)
 	if remErr != nil {
-		panic(remErr)
+		log.Println("unalbe to emove key: " + remErr)
 	}
 	// remove the associated key
 	client.Del(key)
@@ -154,6 +155,7 @@ func delFile(client *redis.Client) {
 func getKeysCount(client *redis.Client) uint64 {
 	keys, countErr := client.DBSize().Result()
 	if countErr != nil {
+		log.Println("getKeysCount: unalbe to get count: " + countErr)
 		panic(countErr)
 	}
 	// returning a bit memory space since there could be a lot of files
@@ -167,6 +169,7 @@ func delAllFiles(client *redis.Client) {
 	// check to make sure there really are files to delete
 	keysCount := getKeysCount(client)
 	for keysCount > 0 {
+		// why do this all twice, just call an existing function
 		delFile(client)
 		// update our count
 		keysCount = getKeysCount(client)
@@ -180,8 +183,16 @@ func main() {
 	ttlPtr := flag.Int("ttl", 60, "Index Key/Value store default key TTL"
 	redishostPtr := flag.String("dbhost", "localhost", "Hostname of the network redis server")
 	redisdbPtr := flag.Int("db", 0, "redis db id you want to store keys in")
+	logfilePtr := flag.String("logifle", "/dev/null", "location where you want to log message")
 
 	flag.Parse()
+  // setup logging
+	logFile, logErr := os.OpenFile(*logfilePtr, os.O_WRONLY|os.O_APPEND, 666)
+	if logErr != nil {
+		panic(logErr)
+	}
+	defer logFile.Close()
+  log.SetOutput(logFile)
 
 	// establish a connection to the database
 	client := redis.NewClient(&redis.Options{
@@ -190,6 +201,8 @@ func main() {
 	})
 	_, connectErr := client.Ping().Result()
 	if connectErr != nil {
+		log.Println("Error connecting to Redis: " + connectErr)
+		// we still want to panic here, we can't work with out the db
 		panic(connectErr)
 	}
 	// get the currnet number of keys to start
