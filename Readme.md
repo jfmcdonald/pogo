@@ -9,6 +9,19 @@ hosts as possible. The idea is to spread the IO as
 wide as possible to create a "worst case scenario" for  
 any cluster connected storage.  
 
+Warnings!
+=========
+
+Don't run pogo against production file systems!
+No Really, Don't!
+Pogo the IO Clown generates rather small files and  
+expands them slowly if at all. That said, Pogo is able  
+to create a file-system crushing number of files depending  
+on configuration. The point of Pogo is to break stuff.  
+Don't break stuff your boss is going to get mad about.  
+You have been warned. If Mis-use of Pogo gets you fired or  
+arrested it's so not my fault.
+
 Whats going on here?
 --------------------
 Ok so what are we actually doing here?  
