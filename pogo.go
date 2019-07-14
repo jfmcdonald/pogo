@@ -3,10 +3,10 @@ package main
 import (
 	"flag"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"os"
 	"time"
-	"log"
 
 	"github.com/go-redis/redis"
 )
@@ -55,13 +55,15 @@ func createFile(pathPtr *string, ttlPtr *int, client *redis.Client) {
 	// Create the file on disk
 	emptyFile, err := os.Create(filePath)
 	if err != nil {
-		log.Println("error creating empty file at: " + filePath + " " + err)
+		log.Println("error creating empty file at: " + filePath)
+		log.Println(err)
 	}
 	emptyFile.Close()
 	// add the place holder to the redis db
 	setErr := client.Set(fileName, filePath, time.Duration(*ttlPtr)*time.Second).Err()
 	if setErr != nil {
-		log.Println("error setting db key for file: " + fileName + " " + setErr)
+		log.Println("error setting db key for file: " + fileName)
+		log.Println(setErr)
 	}
 }
 
@@ -83,7 +85,8 @@ func updateFile(client *redis.Client) {
 	// we don't use it
 	_, writeErr := file.WriteString(randString(8))
 	if writeErr != nil {
-		log.Println("unable to write out to file: " + file + " " + writeErr)
+		log.Println("unable to write out to file: " + file)
+		log.PRintln(writeErr)
 	}
 }
 
@@ -97,7 +100,8 @@ func readFile(client *redis.Client) {
 	// Read in our file
 	data, readErr := ioutil.ReadFile(val)
 	if readErr != nil {
-		log.Println("unalbe to read from file: "  + val + " " + readErr)
+		log.Println("unalbe to read from file: " + val)
+		log.Println(readErr)
 	}
 	// do something with the data so it's really in mem
 	data = data
@@ -107,16 +111,18 @@ func readFile(client *redis.Client) {
 // Expects: pointer to redis Client
 // Retruns a file path as String
 // TODO:
-func getPath (client *redis.Client) String {
+func getPath(client *redis.Client) String {
 	// get a random file key from the db
 	key, randErr := client.RandomKey().Result()
 	if randErr != nil {
-		log.Println("unable to get randome key: " + randErr)
+		log.Println("unable to get randome key:)
+		log.Println(randErr)
 	}
 	// get the keys value
 	val, getErr := client.Get(key).Result()
 	if getErr != nil {
-		log.Println("unable to get value from key: " + getErr)
+		log.Println("unable to get value from key:")
+		log.Println(getErr)
 	}
 	return val
 }
@@ -126,11 +132,12 @@ func getPath (client *redis.Client) String {
 // Returns: nothing
 // TODO: redis key delete error check is broken
 func delFile(client *redis.Client) {
-   val := getPath(client)
+	val := getPath(client)
 	// actually remove the file.
 	remErr := os.Remove(val)
 	if remErr != nil {
-		log.Println("unalbe to emove key: " + remErr)
+		log.Println("unalbe to emove key: ")
+		log.Println(remErr)
 	}
 	// remove the associated key
 	client.Del(key)
@@ -146,7 +153,8 @@ func delFile(client *redis.Client) {
 func getKeysCount(client *redis.Client) uint64 {
 	keys, countErr := client.DBSize().Result()
 	if countErr != nil {
-		log.Println("getKeysCount: unalbe to get count: " + countErr)
+		log.Println("getKeysCount: unalbe to get count: ")
+		log.Println(countErr)
 		panic(countErr)
 	}
 	// returning a bit memory space since there could be a lot of files
@@ -171,19 +179,19 @@ func main() {
 	// command line options
 	pathPtr := flag.String("path", "/tmp/pogo", "Path wher run time files will be generated")
 	filecountPtr := flag.Uint64("count", 10, "Total number of files to generate")
-	ttlPtr := flag.Int("ttl", 60, "Index Key/Value store default key TTL"
+	ttlPtr := flag.Int("ttl", 60, "Index Key/Value store default key TTL")
 	redishostPtr := flag.String("dbhost", "localhost", "Hostname of the network redis server")
 	redisdbPtr := flag.Int("db", 0, "redis db id you want to store keys in")
 	logfilePtr := flag.String("logifle", "/dev/null", "location where you want to log message")
 
 	flag.Parse()
-  // setup logging
+	// setup logging
 	logFile, logErr := os.OpenFile(*logfilePtr, os.O_WRONLY|os.O_APPEND, 666)
 	if logErr != nil {
 		panic(logErr)
 	}
 	defer logFile.Close()
-  log.SetOutput(logFile)
+	log.SetOutput(logFile)
 
 	// establish a connection to the database
 	client := redis.NewClient(&redis.Options{
@@ -192,7 +200,8 @@ func main() {
 	})
 	_, connectErr := client.Ping().Result()
 	if connectErr != nil {
-		log.Println("Error connecting to Redis: " + connectErr)
+		log.Println("Error connecting to Redis: ")
+		log.Println(connectErr)
 		// we still want to panic here, we can't work with out the db
 		panic(connectErr)
 	}
