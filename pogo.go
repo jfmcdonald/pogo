@@ -1,15 +1,13 @@
 package main
 
 import (
-	//"fmt"
-	"math/rand"
 	"flag"
-	"github.com/go-redis/redis"
-	"time"
-	"os"
-	//"strconv"
 	"io/ioutil"
-	//"reflect"
+	"math/rand"
+	"os"
+	"time"
+
+	"github.com/go-redis/redis"
 )
 
 // this code taken from https://medium.com/@kpbird/golang-generate-fixed-size-random-string-dd6dbd5e63c0
@@ -41,14 +39,14 @@ func RandString(n int) string {
 
 	return string(b)
 }
-// End borrowed code.
 
+// End borrowed code.
 
 // Description: creates a new blank file and logs it into the redis db
 // Expects: a pointers to the root path, key ttl and open redis client
 // Returns: nothing
 // TODO: currnetly panics on creation or connection error. this should be imporved
-func createFile (pathPtr *string, ttlPtr *int, client *redis.Client) {
+func createFile(pathPtr *string, ttlPtr *int, client *redis.Client) {
 	// generate a random file name
 	fileName := RandString(10)
 	// build up the full path
@@ -60,7 +58,7 @@ func createFile (pathPtr *string, ttlPtr *int, client *redis.Client) {
 	}
 	emptyFile.Close()
 	// add the place holder to the redis db
-	setErr := client.Set(fileName, filePath,  time.Duration(*ttlPtr)* time.Second).Err()
+	setErr := client.Set(fileName, filePath, time.Duration(*ttlPtr)*time.Second).Err()
 	if setErr != nil {
 		panic(setErr)
 	}
@@ -70,7 +68,7 @@ func createFile (pathPtr *string, ttlPtr *int, client *redis.Client) {
 // Expects: pointer to an open redis client
 // Returns: nothing
 // TODO: replace panics with proper logging
-func updateFile (client *redis.Client) {
+func updateFile(client *redis.Client) {
 	// get a random key from redis
 	key, randErr := client.RandomKey().Result()
 	if randErr != nil {
@@ -89,7 +87,7 @@ func updateFile (client *redis.Client) {
 	}
 	// defer the close till the end of the funciton
 	defer file.Close()
-	// write out an random 8 bits. We are igoring the length here since 
+	// write out an random 8 bits. We are igoring the length here since
 	// we don't use it
 	_, writeErr := file.WriteString(RandString(8))
 	if writeErr != nil {
@@ -97,12 +95,12 @@ func updateFile (client *redis.Client) {
 	}
 }
 
-// Description: read a file by line, generate a line count. This is just to make 
+// Description: read a file by line, generate a line count. This is just to make
 // sure the file is actually read from disk in its entirety
 // Expects: pointer to open redis db connection
 // Returns: nothing
 // TODO: proper error reporting
-func readFile (client *redis.Client) {
+func readFile(client *redis.Client) {
 	// get a random file key from the db
 	key, randErr := client.RandomKey().Result()
 	if randErr != nil {
@@ -121,11 +119,12 @@ func readFile (client *redis.Client) {
 	// do something with the data so it's really in mem
 	data = data
 }
+
 // Description: Delete a random file and remove it's db entery
 // Expects: pointer to open redis client
 // Returns: nothing
 // TODO: proper error logging, redis key delete error check is broken
-func delFile (client *redis.Client) {
+func delFile(client *redis.Client) {
 	// get a random file key from the db
 	key, randErr := client.RandomKey().Result()
 	if randErr != nil {
@@ -146,10 +145,11 @@ func delFile (client *redis.Client) {
 	//	panic(redisDelErr)
 	//}
 }
+
 // Description: get a count of the number of keys in a redis set
 // Expects: pointer to open redis client
 // Returns: uint64 number of keys
-func getKeysCount (client *redis.Client) uint64 {
+func getKeysCount(client *redis.Client) uint64 {
 	keys, countErr := client.DBSize().Result()
 	if countErr != nil {
 		panic(countErr)
@@ -160,7 +160,7 @@ func getKeysCount (client *redis.Client) uint64 {
 // Description: delete all remaining keys from the current run
 // Expects: pointer to open redis client
 // Returns: nothing
-func delAllFiles (client *redis.Client) {
+func delAllFiles(client *redis.Client) {
 	keysCount := getKeysCount(client)
 	for keysCount > 0 {
 		key, randErr := client.RandomKey().Result()
@@ -184,26 +184,35 @@ func main() {
 	// command line options
 	pathPtr := flag.String("path", "/tmp/pogo", "Path wher run time files will be generated")
 	filecountPtr := flag.Uint64("count", 10, "Total number of files to generate")
-	ttlPtr := flag.Int("ttl", 60, "Index Key/Value store default key TTL")
+	ttlPtr := flag.Int("ttl", 60, "Index Key/Value store default key TTL"
+	redishostPtr := flag.String("dbhost", "localhost", "Hostname of the network redis server")
+	redisdbPtr := flag.Int("db", 0, "redis db id you want to store keys in")
 
 	flag.Parse()
 
 	// establish a connection to the database
 	client := redis.NewClient(&redis.Options{
-		Addr:		"localhost:6379",
-		DB:		0,
+		Addr: *redishostPtr + ":6379",
+		DB:   *redisdbPtr,
 	})
 	_, connectErr := client.Ping().Result()
 	if connectErr != nil {
 		panic(connectErr)
 	}
+	// get the currnet number of keys to start
 	keysCount := getKeysCount(client)
+	// this is the main loop we are just going to continue till all the threads
+	// generate the max number of files
 	for keysCount < *filecountPtr {
+		// if this is the first iterations we need to start by creating a file
 		if keysCount == 0 {
 			createFile(pathPtr, ttlPtr, client)
+			// otherwise we move on to the random actions
 		} else {
+			// create a new random seed
 			s1 := rand.NewSource(time.Now().UnixNano())
 			r1 := rand.New(s1)
+			// grap a random number to decide what we are doing this loop
 			switch mode := r1.Intn(4); mode {
 			case 0:
 				createFile(pathPtr, ttlPtr, client)
@@ -215,7 +224,9 @@ func main() {
 				delFile(client)
 			}
 		}
+		// get the new count to update the control
 		keysCount = getKeysCount(client)
 	}
+	// when we hit the limit we want to start cleaning up after ourselves
 	delAllFiles(client)
 }
