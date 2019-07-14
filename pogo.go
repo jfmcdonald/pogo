@@ -72,12 +72,13 @@ func createFile(pathPtr *string, ttlPtr *int, client *redis.Client) {
 // Returns: nothing
 // TODO:
 func updateFile(client *redis.Client) {
-	val := getPath(client)
+	_, val := getPath(client)
 	// open our file for writing, no read we don't want to create an
 	// excuse for the filesystem to cache data
 	file, ioErr := os.OpenFile(val, os.O_WRONLY|os.O_APPEND, 0644)
 	if ioErr != nil {
-		log.Println("unable to open file for writing: " + val + " " + ioErr)
+		log.Println("unable to open file for writing: " + val)
+		log.Println(ioErr)
 	}
 	// defer the close till the end of the funciton
 	defer file.Close()
@@ -85,8 +86,8 @@ func updateFile(client *redis.Client) {
 	// we don't use it
 	_, writeErr := file.WriteString(randString(8))
 	if writeErr != nil {
-		log.Println("unable to write out to file: " + file)
-		log.PRintln(writeErr)
+		log.Println("unable to write out to file: " + val)
+		log.Println(writeErr)
 	}
 }
 
@@ -96,7 +97,7 @@ func updateFile(client *redis.Client) {
 // Returns: nothing
 // TODO:
 func readFile(client *redis.Client) {
-	val := getPath(client)
+	_, val := getPath(client)
 	// Read in our file
 	data, readErr := ioutil.ReadFile(val)
 	if readErr != nil {
@@ -111,8 +112,8 @@ func readFile(client *redis.Client) {
 // Expects: pointer to redis Client
 // Retruns a file path as String
 // TODO:
-func getPath(client *redis.Client) String {
-	// get a random file key from the db
+func getPath(client *redis.Client) (string, string) {
+	// get a random file key from the db:s
 	key, randErr := client.RandomKey().Result()
 	if randErr != nil {
 		log.Println("unable to get randome key:")
@@ -124,7 +125,7 @@ func getPath(client *redis.Client) String {
 		log.Println("unable to get value from key:")
 		log.Println(getErr)
 	}
-	return val
+	return key, val
 }
 
 // Description: Delete a random file and remove it's db entery
@@ -132,7 +133,7 @@ func getPath(client *redis.Client) String {
 // Returns: nothing
 // TODO: redis key delete error check is broken
 func delFile(client *redis.Client) {
-	val := getPath(client)
+	key, val := getPath(client)
 	// actually remove the file.
 	remErr := os.Remove(val)
 	if remErr != nil {
