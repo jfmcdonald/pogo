@@ -46,19 +46,19 @@ case if you kill your job before it finishes.
 Usage?
 ------
 
-sage of /tmp/go-build434096352/b001/exe/pogo:
-  -count uint
-        Total number of files to generate (default 10)
-  -db int
-        redis db id you want to store keys in
-  -dbhost string
-        Hostname of the network redis server (default "localhost")
-  -logifle string
-        location where you want to log message (default "/dev/null")
-  -path string
-        Path wher run time files will be generated (default "/tmp/pogo")
-  -ttl int
-        Index Key/Value store default key TTL (default 60)
+Usage of/pogo:  
+  -count uint  
+        Total number of files to generate (default 10)  
+  -db int  
+        redis db id you want to store keys in  
+  -dbhost string  
+        Hostname of the network redis server (default "localhost")  
+  -logifle string  
+        location where you want to log message (default "/dev/null")  
+  -path string  
+        Path wher run time files will be generated (default "/tmp/pogo")  
+  -ttl int  
+        Index Key/Value store default key TTL (default 60)  
 
 Credit
 -------
