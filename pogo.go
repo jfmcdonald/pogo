@@ -70,16 +70,7 @@ func createFile(pathPtr *string, ttlPtr *int, client *redis.Client) {
 // Returns: nothing
 // TODO:
 func updateFile(client *redis.Client) {
-	// get a random key from redis
-	key, randErr := client.RandomKey().Result()
-	if randErr != nil {
-		log.Println("unable to get random key: " + randErr)
-	}
-	// get the keys value
-	val, getErr := client.Get(key).Result()
-	if getErr != nil {
-		log.Println("unable to get value from key: " + key + " " + getErr)
-	}
+	val := getPath(client)
 	// open our file for writing, no read we don't want to create an
 	// excuse for the filesystem to cache data
 	file, ioErr := os.OpenFile(val, os.O_WRONLY|os.O_APPEND, 0644)
@@ -102,6 +93,21 @@ func updateFile(client *redis.Client) {
 // Returns: nothing
 // TODO:
 func readFile(client *redis.Client) {
+	val := getPath(client)
+	// Read in our file
+	data, readErr := ioutil.ReadFile(val)
+	if readErr != nil {
+		log.Println("unalbe to read from file: "  + val + " " + readErr)
+	}
+	// do something with the data so it's really in mem
+	data = data
+}
+
+// Description: get a file path from redis
+// Expects: pointer to redis Client
+// Retruns a file path as String
+// TODO:
+func getPath (client *redis.Client) String {
 	// get a random file key from the db
 	key, randErr := client.RandomKey().Result()
 	if randErr != nil {
@@ -112,13 +118,7 @@ func readFile(client *redis.Client) {
 	if getErr != nil {
 		log.Println("unable to get value from key: " + getErr)
 	}
-	// Read in our file
-	data, readErr := ioutil.ReadFile(val)
-	if readErr != nil {
-		log.Println("unalbe to read from file: "  + val + " " + readErr)
-	}
-	// do something with the data so it's really in mem
-	data = data
+	return val
 }
 
 // Description: Delete a random file and remove it's db entery
@@ -126,16 +126,7 @@ func readFile(client *redis.Client) {
 // Returns: nothing
 // TODO: redis key delete error check is broken
 func delFile(client *redis.Client) {
-	// get a random file key from the db
-	key, randErr := client.RandomKey().Result()
-	if randErr != nil {
-		log.Println("unable to get randome key" + randErr)
-	}
-	// get the keys value
-	val, getErr := client.Get(key).Result()
-	if getErr != nil {
-		log.Println("unalbe to get key value: " + getErr)
-	}
+   val := getPath(client)
 	// actually remove the file.
 	remErr := os.Remove(val)
 	if remErr != nil {
