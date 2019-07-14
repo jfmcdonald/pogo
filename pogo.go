@@ -135,10 +135,12 @@ func delFile(client *redis.Client) {
 	if getErr != nil {
 		panic(getErr)
 	}
+	// actually remove the file.
 	remErr := os.Remove(val)
 	if remErr != nil {
 		panic(remErr)
 	}
+	// remove the associated key
 	client.Del(key)
 	// This always errors even when it works
 	//if redisDelErr != nil {
@@ -154,6 +156,7 @@ func getKeysCount(client *redis.Client) uint64 {
 	if countErr != nil {
 		panic(countErr)
 	}
+	// returning a bit memory space since there could be a lot of files
 	return uint64(keys)
 }
 
@@ -161,21 +164,11 @@ func getKeysCount(client *redis.Client) uint64 {
 // Expects: pointer to open redis client
 // Returns: nothing
 func delAllFiles(client *redis.Client) {
+	// check to make sure there really are files to delete
 	keysCount := getKeysCount(client)
 	for keysCount > 0 {
-		key, randErr := client.RandomKey().Result()
-		if randErr != nil {
-			panic(randErr)
-		}
-		val, keyErr := client.Get(key).Result()
-		if keyErr != nil {
-			panic(keyErr)
-		}
-		remErr := os.Remove(val)
-		if remErr != nil {
-			panic(remErr)
-		}
-		client.Del(key)
+		delFile(client)
+		// update our count
 		keysCount = getKeysCount(client)
 	}
 }
