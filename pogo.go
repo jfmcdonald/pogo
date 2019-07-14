@@ -20,7 +20,7 @@ const (
 	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
 )
 
-func RandString(n int) string {
+func randString(n int) string {
 	// set the rand seed
 	var src = rand.NewSource(time.Now().UnixNano())
 	// create a sice to hold our byte string
@@ -49,7 +49,7 @@ func RandString(n int) string {
 // TODO:
 func createFile(pathPtr *string, ttlPtr *int, client *redis.Client) {
 	// generate a random file name
-	fileName := RandString(10)
+	fileName := randString(10)
 	// build up the full path
 	filePath := *pathPtr + "/" + fileName
 	// Create the file on disk
@@ -90,7 +90,7 @@ func updateFile(client *redis.Client) {
 	defer file.Close()
 	// write out an random 8 bits. We are igoring the length here since
 	// we don't use it
-	_, writeErr := file.WriteString(RandString(8))
+	_, writeErr := file.WriteString(randString(8))
 	if writeErr != nil {
 		log.Println("unable to write out to file: " + file + " " + writeErr)
 	}
