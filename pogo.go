@@ -115,7 +115,7 @@ func getPath(client *redis.Client) String {
 	// get a random file key from the db
 	key, randErr := client.RandomKey().Result()
 	if randErr != nil {
-		log.Println("unable to get randome key:)
+		log.Println("unable to get randome key:")
 		log.Println(randErr)
 	}
 	// get the keys value
