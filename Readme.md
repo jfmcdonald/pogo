@@ -18,7 +18,7 @@ file to act on or generates a new random file name to
 create. File creation creates an empty file and an
 index Key:Value, a read pulls in all lines and does a 
 char count, an update adds a random 8 bit string and 
-CR/LF, and delete removes the file and associated index.
+and delete removes the file and associated index.
 
 Pogo relys on a redis key value store, created
 files are stored with a name:path in redis so we never
@@ -45,6 +45,5 @@ Credit
 Created by Jason McDonald
 For Harvard Medical School
 Created 12 July 2019
-Updated 12 July 2019
 
 
