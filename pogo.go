@@ -184,6 +184,7 @@ func main() {
 	redishostPtr := flag.String("dbhost", "localhost", "Hostname of the network redis server")
 	redisdbPtr := flag.Int("db", 0, "redis db id you want to store keys in")
 	logfilePtr := flag.String("logifle", "/dev/null", "location where you want to log message")
+	redispassPtr := flag.String("pass", "", "Password for redis db")
 
 	flag.Parse()
 	// setup logging
@@ -198,6 +199,7 @@ func main() {
 	client := redis.NewClient(&redis.Options{
 		Addr: *redishostPtr + ":6379",
 		DB:   *redisdbPtr,
+		Password: *redispassPtr,
 	})
 	_, connectErr := client.Ping().Result()
 	if connectErr != nil {
