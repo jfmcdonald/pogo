@@ -62,8 +62,16 @@ func createFile(pathPtr *string, ttlPtr *int, client *redis.Client) {
 	// add the place holder to the redis db
 	setErr := client.Set(fileName, filePath, time.Duration(*ttlPtr)*time.Second).Err()
 	if setErr != nil {
+		// due to retries this should only trigger after 5 attempts
 		log.Println("error setting db key for file: " + fileName)
 		log.Println(setErr)
+		// if we can't write the key we should delete the file to not leave orphans
+		delErr := os.Remove(filePath)
+		if delErr != nil {
+			// if this errors too we are probably boraked
+			panic("bacout file deletiong failed: functon createFile")
+		}
+		panic("failed to create redis entry for new file")
 	}
 }
 
