@@ -197,9 +197,10 @@ func main() {
 
 	// establish a connection to the database
 	client := redis.NewClient(&redis.Options{
-		Addr: *redishostPtr + ":6379",
-		DB:   *redisdbPtr,
-		Password: *redispassPtr,
+		Addr:       *redishostPtr + ":6379",
+		DB:         *redisdbPtr,
+		Password:   *redispassPtr,
+		MaxRetries: 5,
 	})
 	_, connectErr := client.Ping().Result()
 	if connectErr != nil {
