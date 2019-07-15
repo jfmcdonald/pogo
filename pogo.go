@@ -69,7 +69,7 @@ func createFile(pathPtr *string, ttlPtr *int, client *redis.Client) {
 		delErr := os.Remove(filePath)
 		if delErr != nil {
 			// if this errors too we are probably boraked
-			panic("bacout file deletiong failed: functon createFile")
+			panic("backout file deletiong failed: functon createFile")
 		}
 		panic("failed to create redis entry for new file")
 	}
@@ -191,7 +191,7 @@ func main() {
 	ttlPtr := flag.Int("ttl", 60, "Index Key/Value store default key TTL")
 	redishostPtr := flag.String("dbhost", "localhost", "Hostname of the network redis server")
 	redisdbPtr := flag.Int("db", 0, "redis db id you want to store keys in")
-	logfilePtr := flag.String("logifle", "/dev/null", "location where you want to log message")
+	logfilePtr := flag.String("logfile", "/dev/null", "location where you want to log message")
 	redispassPtr := flag.String("pass", "", "Password for redis db")
 
 	flag.Parse()
