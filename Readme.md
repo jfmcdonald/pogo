@@ -57,8 +57,12 @@ Usage of/pogo:
         location where you want to log message (default "/dev/null")  
   -path string  
         Path wher run time files will be generated (default "/tmp/pogo")  
+	This should be the path to the file system you are testing.
   -ttl int  
-        Index Key/Value store default key TTL (default 60)  
+        Index Key/Value store default key TTL (default 60)
+	Make sure you update this for how ever long you want your job to run
+	If indexes get deleted before the files are removed they won't be
+	cleaned up after the run.
 
 Credit
 -------
