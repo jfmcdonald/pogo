@@ -93,7 +93,7 @@ func delFile(client *redis.Client) {
 	// actually remove the file.
 	remErr := os.Remove(val)
 	if remErr != nil {
-		log.Println("unalbe to emove key: ")
+		log.Println("unalbe to remove key: ")
 		log.Println(remErr)
 	}
 	// remove the associated key
