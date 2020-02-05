@@ -46,19 +46,21 @@ case if you kill your job before it finishes.
 Usage?
 ------
 
-Usage of/pogo:  
-  -count uint  
-        Total number of files to generate (default 10)  
-  -db int  
-        redis db id you want to store keys in  
-  -dbhost string  
-        Hostname of the network redis server (default "localhost")  
-  -logifle string  
-        location where you want to log message (default "/dev/null")  
-  -path string  
-        Path wher run time files will be generated (default "/tmp/pogo")  
-	This should be the path to the file system you are testing.
-  -ttl int  
+Usage of ./pogo:
+  -count uint
+        Total number of files to generate (default 10)
+  -db int
+        redis db id you want to store keys in
+  -dbhost string
+        Hostname of the network redis server (default "localhost")
+  -logfile string
+        location where you want to log message (default "/dev/null")
+  -pass string
+        Password for redis db
+  -path string
+        Path wher run time files will be generated (default "/tmp/pogo")
+  -ttl int
+        Index Key/Value store default key TTL (default 60) 
         Index Key/Value store default key TTL (default 60)
 	Make sure you update this for how ever long you want your job to run
 	If indexes get deleted before the files are removed they won't be
