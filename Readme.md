@@ -46,25 +46,25 @@ case if you kill your job before it finishes.
 Usage?
 ------
 
-Usage of ./pogo:
-  -count uint
-        Total number of files to generate (default 10)
-  -db int
-        redis db id you want to store keys in
-  -dbhost string
-        Hostname of the network redis server (default "localhost")
-  -logfile string
-        location where you want to log message (default "/dev/null")
-  -pass string
-        Password for redis db
-  -path string
-        Path wher run time files will be generated (default "/tmp/pogo")
-  -ttl int
-        Index Key/Value store default key TTL (default 60) 
-        Index Key/Value store default key TTL (default 60)
-	Make sure you update this for how ever long you want your job to run
-	If indexes get deleted before the files are removed they won't be
-	cleaned up after the run.
+Usage of ./pogo:<br>
+&nbsp;&nbsp;  -count uint<br>
+&nbsp;&nbsp;&nbsp;&nbsp;        Total number of files to generate (default 10)<br>
+&nbsp;&nbsp;  -db int<br>
+&nbsp;&nbsp;&nbsp;&nbsp;        redis db id you want to store keys in<br>
+&nbsp;&nbsp;  -dbhost string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;       Hostname of the network redis server (default "localhost")<br>
+&nbsp;&nbsp;  -logfile string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;        location where you want to log message (default "/dev/null")<br>
+&nbsp;&nbsp; -pass string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;        Password for redis db<br>
+&nbsp;&nbsp;  -path string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;        Path wher run time files will be generated (default "/tmp/pogo")<br>
+&nbsp;&nbsp;  -ttl int<br>
+&nbsp;&nbsp;&nbsp;&nbsp;        Index Key/Value store default key TTL (default 60) <br>
+&nbsp;&nbsp;&nbsp;&nbsp;        Index Key/Value store default key TTL (default 60)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;	Make sure you update this for how ever long you want your job to run<br>
+&nbsp;&nbsp;&nbsp;&nbsp;	If indexes get deleted before the files are removed they won't be<br>
+&nbsp;&nbsp;&nbsp;&nbsp;	cleaned up after the run.<br>
 
 Credit
 -------
